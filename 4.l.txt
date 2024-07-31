@@ -1,0 +1,21 @@
+%{
+#include <stdio.h>
+%}
+
+%%
+
+[aeiouAEIOU]     { printf("%c is a vowel\n", yytext[0]); }
+[a-zA-Z]         { printf("%c is a consonant\n", yytext[0]); }
+.                { /* Ignore other characters */ }
+
+%%
+
+int main() {
+    printf("Enter a string: ");
+    yylex();
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
