@@ -1,0 +1,28 @@
+%option noyywrap
+
+%{
+#include <stdio.h>
+#include <string.h>
+%}
+
+ABC "ABC"
+ABC_LOW "abc"
+OTHER [^abc]
+
+%%
+{ABC_LOW} {
+    printf("ABC");
+}
+{OTHER} {
+    printf("%s", yytext);
+}
+%%
+
+int main() {
+    char input[256];
+    printf("Enter a string: ");
+    fgets(input, 256, stdin);
+    yy_scan_string(input);
+    yylex();
+    return 0;
+}
