@@ -1,0 +1,79 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_EXPR 100
+#define MAX_LEN  50
+
+// A structure to represent an expression
+typedef struct {
+    char expr[MAX_LEN];
+    int value;
+} Expression;
+
+Expression exprList[MAX_EXPR];
+int exprCount = 0;
+
+// Function to check if an expression is already computed
+int isComputed(char *expr, int *value) {
+    for (int i = 0; i < exprCount; i++) {
+        if (strcmp(exprList[i].expr, expr) == 0) {
+            *value = exprList[i].value;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// Function to add a new expression to the list
+void addExpression(char *expr, int value) {
+    strcpy(exprList[exprCount].expr, expr);
+    exprList[exprCount].value = value;
+    exprCount++;
+}
+
+// Function to evaluate an expression (for simplicity, assume the expression is in the form "a op b")
+int evaluateExpression(char *expr) {
+    int a, b;
+    char op;
+    sscanf(expr, "%d %c %d", &a, &op, &b);
+
+    switch (op) {
+        case '+': return a + b;
+        case '-': return a - b;
+        case '*': return a * b;
+        case '/': return a / b;
+        default: return 0;
+    }
+}
+
+// Function to optimize code by eliminating common subexpressions
+void optimizeCode(char code[MAX_EXPR][MAX_LEN], int codeCount) {
+    for (int i = 0; i < codeCount; i++) {
+        int value;
+        if (isComputed(code[i], &value)) {
+            printf("Reusing result of \"%s\": %d\n", code[i], value);
+        } else {
+            value = evaluateExpression(code[i]);
+            printf("Evaluating \"%s\": %d\n", code[i], value);
+            addExpression(code[i], value);
+        }
+    }
+}
+
+int main() {
+    // Example code to optimize
+    char code[MAX_EXPR][MAX_LEN] = {
+        "2 + 3",
+        "4 * 5",
+        "2 + 3", // Common subexpression
+        "6 - 2",
+        "4 * 5"  // Common subexpression
+    };
+    int codeCount = 5;
+
+    // Optimize the code
+    optimizeCode(code, codeCount);
+
+    return 0;
+}
