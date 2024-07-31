@@ -1,0 +1,46 @@
+%option noyywrap
+
+%{
+#include <stdio.h>
+#include <math.h>
+%}
+
+DIGIT [0-9]+
+ADD "+"
+SUB "-"
+MUL "*"
+DIV "/"
+EQ "="
+WS [ \t\n]
+
+%%
+{DIGIT} {
+    printf("Number: %s\n", yytext);
+}
+{ADD} {
+    printf("Addition Operator: %s\n", yytext);
+}
+{SUB} {
+    printf("Subtraction Operator: %s\n", yytext);
+}
+{MUL} {
+    printf("Multiplication Operator: %s\n", yytext);
+}
+{DIV} {
+    printf("Division Operator: %s\n", yytext);
+}
+{EQ} {
+    printf("Equality Operator: %s\n", yytext);
+}
+{WS} {
+    /* ignore whitespace */
+}
+. {
+    printf("Invalid character: %s\n", yytext);
+}
+%%
+
+int main() {
+    yylex();
+    return 0;
+}
