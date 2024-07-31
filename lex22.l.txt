@@ -1,0 +1,47 @@
+%option noyywrap
+
+%{
+#include <stdio.h>
+#include <string.h>
+
+int macro_count = 0;
+int include_count = 0;
+%}
+
+MACRO_DEF "#define"[^\n]*
+INCLUDE_DIRECTIVE "#include"[^\n]*
+WS [ \t\n]
+COMMENT "//"[^\n]* /* single-line comment */
+COMMENT "/*"[^*/]*"*/" /* multi-line comment */
+
+%%
+{MACRO_DEF} {
+    printf("Macro defined: %s\n", yytext);
+    macro_count++;
+}
+{INCLUDE_DIRECTIVE} {
+    printf("Header file included: %s\n", yytext);
+    include_count++;
+}
+{WS} {
+    /* ignore whitespace */
+}
+{COMMENT} {
+    /* ignore comments */
+}
+. {
+    /* ignore other characters */
+}
+%%
+
+int main() {
+    yyin = fopen("sample.c", "r");
+    if (!yyin) {
+        perror("Error opening file");
+        return 1;
+    }
+    yylex();
+    printf("Number of macros defined: %d\n", macro_count);
+    printf("Number of header files included: %d\n", include_count);
+    return 0;
+}
