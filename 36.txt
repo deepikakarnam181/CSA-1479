@@ -1,0 +1,122 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+typedef enum {
+    TOKEN_NUMBER, TOKEN_PLUS, TOKEN_MINUS, TOKEN_MUL, TOKEN_DIV, TOKEN_LPAREN, TOKEN_RPAREN, TOKEN_EOF
+} TokenType;
+
+typedef struct {
+    TokenType type;
+    int value; // Only used for TOKEN_NUMBER
+} Token;
+
+const char *input;
+Token currentToken;
+
+// Function prototypes
+void getNextToken();
+int expr();
+int term();
+int factor();
+
+void getNextToken() {
+    while (*input == ' ') input++; // Skip whitespaces
+
+    if (isdigit(*input)) {
+        currentToken.type = TOKEN_NUMBER;
+        currentToken.value = 0;
+        while (isdigit(*input)) {
+            currentToken.value = currentToken.value * 10 + (*input - '0');
+            input++;
+        }
+    } else if (*input == '+') {
+        currentToken.type = TOKEN_PLUS;
+        input++;
+    } else if (*input == '-') {
+        currentToken.type = TOKEN_MINUS;
+        input++;
+    } else if (*input == '*') {
+        currentToken.type = TOKEN_MUL;
+        input++;
+    } else if (*input == '/') {
+        currentToken.type = TOKEN_DIV;
+        input++;
+    } else if (*input == '(') {
+        currentToken.type = TOKEN_LPAREN;
+        input++;
+    } else if (*input == ')') {
+        currentToken.type = TOKEN_RPAREN;
+        input++;
+    } else if (*input == '\0') {
+        currentToken.type = TOKEN_EOF;
+    } else {
+        printf("Unknown character: %c\n", *input);
+        exit(1);
+    }
+}
+
+int factor() {
+    int value;
+    if (currentToken.type == TOKEN_NUMBER) {
+        value = currentToken.value;
+        getNextToken();
+    } else if (currentToken.type == TOKEN_LPAREN) {
+        getNextToken(); // Consume '('
+        value = expr();
+        if (currentToken.type != TOKEN_RPAREN) {
+            printf("Error: Expected )\n");
+            exit(1);
+        }
+        getNextToken(); // Consume ')'
+    } else {
+        printf("Error: Unexpected token in factor\n");
+        exit(1);
+    }
+    return value;
+}
+
+int term() {
+    int value = factor();
+    while (currentToken.type == TOKEN_MUL || currentToken.type == TOKEN_DIV) {
+        if (currentToken.type == TOKEN_MUL) {
+            getNextToken();
+            value *= factor();
+        } else if (currentToken.type == TOKEN_DIV) {
+            getNextToken();
+            value /= factor();
+        }
+    }
+    return value;
+}
+
+int expr() {
+    int value = term();
+    while (currentToken.type == TOKEN_PLUS || currentToken.type == TOKEN_MINUS) {
+        if (currentToken.type == TOKEN_PLUS) {
+            getNextToken();
+            value += term();
+        } else if (currentToken.type == TOKEN_MINUS) {
+            getNextToken();
+            value -= term();
+        }
+    }
+    return value;
+}
+
+int main() {
+    char expression[100];
+    printf("Enter a mathematical expression: ");
+    scanf("%s", expression);
+    input = expression;
+    getNextToken(); // Initialize the first token
+
+    int result = expr();
+    if (currentToken.type != TOKEN_EOF) {
+        printf("Error: Unexpected input at the end\n");
+        return 1;
+    }
+
+    printf("The result is: %d\n", result);
+    return 0;
+}
