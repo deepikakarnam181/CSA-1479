@@ -1,0 +1,118 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+typedef enum { NUMBER, PLUS, MINUS, MULTIPLY, DIVIDE, LPAREN, RPAREN, END } TokenType;
+
+typedef struct {
+    TokenType type;
+    int value;
+} Token;
+
+const char *input;
+Token currentToken;
+
+void getNextToken() {
+    while (*input == ' ') {
+        input++;
+    }
+
+    if (isdigit(*input)) {
+        currentToken.type = NUMBER;
+        currentToken.value = 0;
+        while (isdigit(*input)) {
+            currentToken.value = currentToken.value * 10 + (*input - '0');
+            input++;
+        }
+    } else if (*input == '+') {
+        currentToken.type = PLUS;
+        input++;
+    } else if (*input == '-') {
+        currentToken.type = MINUS;
+        input++;
+    } else if (*input == '*') {
+        currentToken.type = MULTIPLY;
+        input++;
+    } else if (*input == '/') {
+        currentToken.type = DIVIDE;
+        input++;
+    } else if (*input == '(') {
+        currentToken.type = LPAREN;
+        input++;
+    } else if (*input == ')') {
+        currentToken.type = RPAREN;
+        input++;
+    } else if (*input == '\0') {
+        currentToken.type = END;
+    } else {
+        printf("Unknown character: %c\n", *input);
+        exit(1);
+    }
+}
+
+int parseExpression();
+
+int parsePrimary() {
+    if (currentToken.type == NUMBER) {
+        int value = currentToken.value;
+        getNextToken();
+        return value;
+    } else if (currentToken.type == LPAREN) {
+        getNextToken();
+        int value = parseExpression();
+        if (currentToken.type != RPAREN) {
+            printf("Expected )\n");
+            exit(1);
+        }
+        getNextToken();
+        return value;
+    } else {
+        printf("Unexpected token\n");
+        exit(1);
+    }
+}
+
+int parseTerm() {
+    int value = parsePrimary();
+    while (currentToken.type == MULTIPLY || currentToken.type == DIVIDE) {
+        if (currentToken.type == MULTIPLY) {
+            getNextToken();
+            value *= parsePrimary();
+        } else if (currentToken.type == DIVIDE) {
+            getNextToken();
+            value /= parsePrimary();
+        }
+    }
+    return value;
+}
+
+int parseExpression() {
+    int value = parseTerm();
+    while (currentToken.type == PLUS || currentToken.type == MINUS) {
+        if (currentToken.type == PLUS) {
+            getNextToken();
+            value += parseTerm();
+        } else if (currentToken.type == MINUS) {
+            getNextToken();
+            value -= parseTerm();
+        }
+    }
+    return value;
+}
+
+int evaluate(const char *expr) {
+    input = expr;
+    getNextToken();
+    return parseExpression();
+}
+
+int main() {
+    char expression[100];
+    printf("Enter a mathematical expression: ");
+    scanf("%s", expression);
+
+    int result = evaluate(expression);
+    printf("The result is: %d\n", result);
+
+    return 0;
+}
