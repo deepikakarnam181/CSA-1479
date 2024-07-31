@@ -1,0 +1,33 @@
+%option noyywrap
+
+%{
+#include <stdio.h>
+#include <string.h>
+
+#define DAY_MAX 31
+#define MONTH_MAX 12
+#define YEAR_MIN 1900
+#define YEAR_MAX 2022
+
+int day, month, year;
+%}
+
+%%
+[0-9]{1,2}"/"[0-9]{1,2}"/"[0-9]{4} {
+    sscanf(yytext, "%d/%d/%d", &day, &month, &year);
+    if (day > 0 && day <= DAY_MAX && month > 0 && month <= MONTH_MAX && year >= YEAR_MIN && year <= YEAR_MAX) {
+        printf("Valid DOB: %s\n", yytext);
+    } else {
+        printf("Invalid DOB: %s\n", yytext);
+    }
+}
+. { /* reject other characters */ }
+\n {
+    return 0;
+}
+%%
+
+int main() {
+    yylex();
+    return 0;
+}
