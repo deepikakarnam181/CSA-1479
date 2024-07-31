@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <ctype.h>
+
+int main() {
+    FILE *file;
+    char filename[100];
+    char ch;
+    int characters = 0, words = 0, lines = 0;
+    int inWord = 0;
+
+    // Prompt user for the file name
+    printf("Enter the filename: ");
+    scanf("%s", filename);
+
+    // Open the file
+    file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Could not open file %s\n", filename);
+        return 1;
+    }
+
+    // Read the file character by character
+    while ((ch = fgetc(file)) != EOF) {
+        characters++;
+
+        // Check for new lines
+        if (ch == '\n') {
+            lines++;
+        }
+
+        // Check for words
+        if (isspace(ch)) {
+            if (inWord) {
+                inWord = 0;
+                words++;
+            }
+        } else {
+            inWord = 1;
+        }
+    }
+
+    // If the last character was a word character, count the last word
+    if (inWord) {
+        words++;
+    }
+
+    // Close the file
+    fclose(file);
+
+    // Print the results
+    printf("Characters: %d\n", characters);
+    printf("Words: %d\n", words);
+    printf("Lines: %d\n", lines);
+
+    return 0;
+}
