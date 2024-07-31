@@ -1,0 +1,52 @@
+%option noyywrap
+
+%{
+#include <stdio.h>
+#include <string.h>
+
+#define PROTOCOL_MAX 10
+#define DOMAIN_MAX 255
+#define PATH_MAX 255
+
+int protocol_valid = 0;
+int domain_valid = 0;
+int path_valid = 0;
+%}
+
+%%
+"https://" | "http://" {
+    protocol_valid = 1;
+}
+[a-zA-Z0-9.-]+ {
+    if (!domain_valid) {
+        domain_valid = 1;
+        printf("Domain: %s\n", yytext);
+    } else {
+        printf("Invalid URL: multiple domains\n");
+        return 1;
+    }
+}
+"/"[a-zA-Z0-9./-]* {
+    if (!path_valid) {
+        path_valid = 1;
+        printf("Path: %s\n", yytext);
+    } else {
+        printf("Invalid URL: multiple paths\n");
+        return 1;
+    }
+}
+. { /* reject other characters */ }
+\n {
+    if (protocol_valid && domain_valid && path_valid) {
+        printf("URL is valid\n");
+    } else {
+        printf("Invalid URL: missing protocol, domain, or path\n");
+    }
+    return 0;
+}
+%%
+
+int main() {
+    yylex();
+    return 0;
+}
