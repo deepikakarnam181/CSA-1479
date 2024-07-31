@@ -1,0 +1,47 @@
+%option noyywrap
+
+%{
+#include <stdio.h>
+#include <string.h>
+
+int comment_count = 0;
+FILE *outfile;
+%}
+
+COMMENT "//"[^\n]* /* single-line comment */
+COMMENT "/*"[^*/]*"*/" /* multi-line comment */
+WS [ \t\n]
+CODE [^/\n]+
+
+%%
+{COMMENT} {
+    comment_count++;
+    /* ignore comment */
+}
+{WS} {
+    /* ignore whitespace */
+}
+{CODE} {
+    fprintf(outfile, "%s", yytext);
+}
+. {
+    /* ignore other characters */
+}
+%%
+
+int main() {
+    yyin = fopen("input.c", "r");
+    if (!yyin) {
+        perror("Error opening file");
+        return 1;
+    }
+    outfile = fopen("output.c", "w");
+    if (!outfile) {
+        perror("Error opening output file");
+        return 1;
+    }
+    yylex();
+    printf("Number of comment lines: %d\n", comment_count);
+    fclose(outfile);
+    return 0;
+}
