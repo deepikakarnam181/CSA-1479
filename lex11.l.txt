@@ -1,0 +1,17 @@
+%option noyywrap
+
+%{
+#include <stdio.h>
+%}
+
+%%
+[aAeEiIoOuU][a-zA-Z]* {
+    printf("Accepted: %s\n", yytext);
+}
+. { /* reject other strings */ }
+%%
+
+int main() {
+    yylex();
+    return 0;
+}
