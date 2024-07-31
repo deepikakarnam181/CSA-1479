@@ -1,0 +1,67 @@
+%option noyywrap
+
+%{
+#include <stdio.h>
+#include <string.h>
+
+int char_count = 0;
+int line_count = 1;
+int word_count = 0;
+%}
+
+DIGIT [0-9]
+IDENTIFIER [a-zA-Z_][a-zA-Z_0-9]{0,31} /* restrict identifier length to 32 characters */
+KEYWORD "int|char|void|float|double|if|else|while|for|switch|case|default|break|continue|return|printf|scanf"
+STRING_LITERAL \"[^\"]*\"
+COMMENT "//"[^\n]* /* single-line comment */
+COMMENT "/*"[^*/]*"*/" /* multi-line comment */
+WS [ \t\n]
+
+%%
+{IDENTIFIER} {
+    printf("Identifier: %s\n", yytext);
+    word_count++;
+    char_count += strlen(yytext);
+}
+{KEYWORD} {
+    printf("Keyword: %s\n", yytext);
+    word_count++;
+    char_count += strlen(yytext);
+}
+{STRING_LITERAL} {
+    printf("String literal: %s\n", yytext);
+    word_count++;
+    char_count += strlen(yytext);
+}
+{DIGIT}+ {
+    printf("Number: %s\n", yytext);
+    word_count++;
+    char_count += strlen(yytext);
+}
+{WS} {
+    if (*yytext == '\n') {
+        line_count++;
+    }
+    char_count++;
+}
+{COMMENT} {
+    /* ignore comments */
+}
+. {
+    printf("Unknown character: %s\n", yytext);
+    char_count++;
+}
+%%
+
+int main() {
+    yyin = fopen("sample.c", "r");
+    if (!yyin) {
+        perror("Error opening file");
+        return 1;
+    }
+    yylex();
+    printf("Character count: %d\n", char_count);
+    printf("Line count: %d\n", line_count);
+    printf("Word count: %d\n", word_count);
+    return 0;
+}
